@@ -1,0 +1,8 @@
+[package]
+name = "memstat"
+version = "0.1.0"
+edition = "2021"
+description = "Naive collector of memory statistics"
+
+[dependencies]
+once_cell = "1.19.0"
