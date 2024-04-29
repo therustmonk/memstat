@@ -6,3 +6,4 @@ description = "Naive collector of memory statistics"
 
 [dependencies]
 once_cell = "1.19.0"
+size = "0.4.1"
