@@ -58,10 +58,20 @@ mod test {
     use super::*;
 
     #[allow(dead_code)]
-    struct Value(u64);
+    struct Struct1(u64);
 
-    impl Value {
+    impl Struct1 {
         pub fn new(value: u64) -> Self {
+            count_in::<Self>();
+            Self(value)
+        }
+    }
+
+    #[allow(dead_code)]
+    struct Struct2(u32);
+
+    impl Struct2 {
+        pub fn new(value: u32) -> Self {
             count_in::<Self>();
             Self(value)
         }
@@ -70,7 +80,8 @@ mod test {
     #[test]
     fn test_collector() {
         for x in 0..1_000_000 {
-            let _value = Value::new(x);
+            let _1 = Struct1::new(x);
+            let _2 = Struct2::new(x as u32);
         }
         print_report();
     }
