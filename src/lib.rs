@@ -16,14 +16,15 @@ pub fn count_in<T>() {
     if let Some(data) = reader.stats.get(&name) {
         data.counter.fetch_add(1, Ordering::SeqCst);
     } else {
+        drop(reader);
         let mut writer = COLLECTOR.inner.write().unwrap();
-        writer.stats.entry(name).or_insert_with(|| {
-            let size = size_of::<T>();
-            Data {
-                size,
-                counter: AtomicUsize::from(0),
-            }
-        });
+        let size = size_of::<T>();
+        let data = Data {
+            size,
+            counter: AtomicUsize::from(0),
+        };
+        writer.stats.insert(name, data);
+        drop(writer);
         count_in::<T>();
     }
 }
@@ -50,4 +51,27 @@ struct CollectorInner {
 struct Data {
     size: usize,
     counter: AtomicUsize,
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[allow(dead_code)]
+    struct Value(u64);
+
+    impl Value {
+        pub fn new(value: u64) -> Self {
+            count_in::<Self>();
+            Self(value)
+        }
+    }
+
+    #[test]
+    fn test_collector() {
+        for x in 0..1_000_000 {
+            let _value = Value::new(x);
+        }
+        print_report();
+    }
 }
