@@ -1,4 +1,4 @@
-use crate::reporter::{Data, MemStat};
+use crate::reporter::{Data, Snapshot};
 use once_cell::sync::Lazy;
 use size::Size;
 use std::any::type_name;
@@ -38,9 +38,9 @@ pub fn count_out<T>() {
     }
 }
 
-pub fn get_snapshot() -> MemStat {
+pub fn get_snapshot() -> Snapshot {
     let blocking_reader = COLLECTOR.inner.write().unwrap();
-    let mut mem_stat = MemStat::default();
+    let mut mem_stat = Snapshot::default();
     for (name, data) in &blocking_reader.stats {
         mem_stat.stats.insert(name, data.extract());
     }
