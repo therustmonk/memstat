@@ -1,7 +1,7 @@
 mod collector;
 mod reporter;
 
-pub use collector::print_report;
+pub use reporter::Reporter;
 use std::marker::PhantomData;
 
 pub struct MemTrack<T> {
@@ -59,14 +59,13 @@ mod test {
     fn test_collector() {
         let mut data_1 = Vec::new();
         let mut data_2 = Vec::new();
+        let reporter = Reporter::spawn(100, "report.txt");
         for x in 0..1_000_000 {
             let value_1 = Struct1::new(x);
             data_1.push(value_1);
             let value_2 = Struct2::new(x as u32);
             data_2.push(value_2);
-            if x % 1000 == 0 {
-                print_report();
-            }
         }
+        reporter.join().unwrap();
     }
 }

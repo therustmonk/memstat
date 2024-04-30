@@ -1,6 +1,5 @@
 use crate::reporter::{Data, Snapshot};
 use once_cell::sync::Lazy;
-use size::Size;
 use std::any::type_name;
 use std::collections::HashMap;
 use std::mem::size_of;
@@ -47,6 +46,7 @@ pub fn get_snapshot() -> Snapshot {
     mem_stat
 }
 
+/*
 pub fn print_report() {
     println!("MEMSTAT REPORT ----------");
     let reader = COLLECTOR.inner.read().unwrap();
@@ -57,6 +57,7 @@ pub fn print_report() {
     }
     println!("-------------------------");
 }
+*/
 
 #[derive(Default)]
 struct Collector {
