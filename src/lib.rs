@@ -2,10 +2,23 @@ mod collector;
 mod reporter;
 
 pub use reporter::Reporter;
+use std::fmt;
 use std::marker::PhantomData;
 
 pub struct MemTrack<T> {
     _type: PhantomData<T>,
+}
+
+impl<T> Clone for MemTrack<T> {
+    fn clone(&self) -> Self {
+        Self::default()
+    }
+}
+
+impl<T> fmt::Debug for MemTrack<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "MemTrack")
+    }
 }
 
 impl<T> Default for MemTrack<T> {
@@ -26,6 +39,7 @@ mod test {
     use super::*;
 
     #[allow(dead_code)]
+    #[derive(Debug, Clone)]
     struct Struct1 {
         _mem: MemTrack<Self>,
         value: u64,
@@ -62,6 +76,7 @@ mod test {
         let reporter = Reporter::spawn(100, "report.txt");
         for x in 0..1_000_000 {
             let value_1 = Struct1::new(x);
+            data_1.push(value_1.clone());
             data_1.push(value_1);
             let value_2 = Struct2::new(x as u32);
             data_2.push(value_2);

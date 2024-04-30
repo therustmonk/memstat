@@ -23,7 +23,7 @@ impl Data {
     }
 
     pub fn by_total(left: &Self, right: &Self) -> Order {
-        left.total().cmp(&right.total())
+        right.total().cmp(&left.total())
     }
 }
 
