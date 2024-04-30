@@ -1,5 +1,6 @@
 mod collector;
 
+pub use collector::print_report;
 use std::marker::PhantomData;
 
 pub struct MemTrack<T> {
@@ -24,31 +25,47 @@ mod test {
     use super::*;
 
     #[allow(dead_code)]
-    struct Struct1(u64);
+    struct Struct1 {
+        _mem: MemTrack<Self>,
+        value: u64,
+    }
 
     impl Struct1 {
         pub fn new(value: u64) -> Self {
-            count_in::<Self>();
-            Self(value)
+            Self {
+                _mem: MemTrack::default(),
+                value,
+            }
         }
     }
 
     #[allow(dead_code)]
-    struct Struct2(u32);
+    struct Struct2 {
+        _mem: MemTrack<Self>,
+        value: u32,
+    }
 
     impl Struct2 {
         pub fn new(value: u32) -> Self {
-            count_in::<Self>();
-            Self(value)
+            Self {
+                _mem: MemTrack::default(),
+                value,
+            }
         }
     }
 
     #[test]
     fn test_collector() {
+        let mut data_1 = Vec::new();
+        let mut data_2 = Vec::new();
         for x in 0..1_000_000 {
-            let _1 = Struct1::new(x);
-            let _2 = Struct2::new(x as u32);
+            let value_1 = Struct1::new(x);
+            data_1.push(value_1);
+            let value_2 = Struct2::new(x as u32);
+            data_2.push(value_2);
+            if x % 1000 == 0 {
+                print_report();
+            }
         }
-        print_report();
     }
 }
