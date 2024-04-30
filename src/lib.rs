@@ -2,15 +2,33 @@ use once_cell::sync::Lazy;
 use size::Size;
 use std::any::type_name;
 use std::collections::HashMap;
+use std::marker::PhantomData;
 use std::mem::size_of;
 use std::sync::{
     atomic::{AtomicUsize, Ordering},
     RwLock,
 };
 
+pub struct MemTrack<T> {
+    _type: PhantomData<T>,
+}
+
+impl<T> Default for MemTrack<T> {
+    fn default() -> Self {
+        count_in::<T>();
+        Self { _type: PhantomData }
+    }
+}
+
+impl<T> Drop for MemTrack<T> {
+    fn drop(&mut self) {
+        count_out::<T>();
+    }
+}
+
 static COLLECTOR: Lazy<Collector> = Lazy::new(Collector::default);
 
-pub fn count_in<T>() {
+fn count_in<T>() {
     let name = type_name::<T>();
     let reader = COLLECTOR.inner.read().unwrap();
     if let Some(data) = reader.stats.get(&name) {
@@ -29,13 +47,23 @@ pub fn count_in<T>() {
     }
 }
 
+fn count_out<T>() {
+    let name = type_name::<T>();
+    let reader = COLLECTOR.inner.read().unwrap();
+    if let Some(data) = reader.stats.get(&name) {
+        data.counter.fetch_sub(1, Ordering::SeqCst);
+    }
+}
+
 pub fn print_report() {
+    println!("MEMSTAT REPORT ----------");
     let reader = COLLECTOR.inner.read().unwrap();
     for (name, data) in &reader.stats {
         let counter = data.counter.load(Ordering::SeqCst);
         let total = Size::from_bytes(counter * data.size);
         println!("{name} - {total}");
     }
+    println!("-------------------------");
 }
 
 #[derive(Default)]
