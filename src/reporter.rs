@@ -1,5 +1,6 @@
 use super::collector;
 use anyhow::Error;
+use human_duration::human_duration;
 use size::Size;
 use std::cmp::Ordering as Order;
 use std::collections::HashMap;
@@ -57,7 +58,7 @@ impl Reporter {
         while self.active.load(Ordering::Relaxed) {
             let elapsed = self.started.elapsed();
             let snapshot = collector::get_snapshot();
-            write!(file, "Elapsed: {}\n", elapsed.as_millis())?;
+            write!(file, "Elapsed: {}\n", human_duration(&elapsed))?;
             let mut stats: Vec<_> = snapshot.stats.into_iter().collect();
             stats.sort_by(|(_, l), (_, r)| Data::by_total(l, r));
             for (name, data) in stats {
