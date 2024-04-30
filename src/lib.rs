@@ -1,4 +1,5 @@
 mod collector;
+mod reporter;
 
 pub use collector::print_report;
 use std::marker::PhantomData;

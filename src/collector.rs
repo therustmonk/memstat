@@ -1,3 +1,4 @@
+use crate::reporter::{Data, MemStat};
 use once_cell::sync::Lazy;
 use size::Size;
 use std::any::type_name;
@@ -19,7 +20,7 @@ pub fn count_in<T>() {
         drop(reader);
         let mut writer = COLLECTOR.inner.write().unwrap();
         let size = size_of::<T>();
-        let data = Data {
+        let data = CollectorData {
             size,
             counter: AtomicUsize::from(0),
         };
@@ -35,6 +36,15 @@ pub fn count_out<T>() {
     if let Some(data) = reader.stats.get(&name) {
         data.counter.fetch_sub(1, Ordering::SeqCst);
     }
+}
+
+pub fn get_snapshot() -> MemStat {
+    let blocking_reader = COLLECTOR.inner.write().unwrap();
+    let mut mem_stat = MemStat::default();
+    for (name, data) in &blocking_reader.stats {
+        mem_stat.stats.insert(name, data.extract());
+    }
+    mem_stat
 }
 
 pub fn print_report() {
@@ -54,11 +64,20 @@ struct Collector {
 }
 
 #[derive(Default)]
-struct CollectorInner {
-    stats: HashMap<&'static str, Data>,
+pub struct CollectorInner {
+    stats: HashMap<&'static str, CollectorData>,
 }
 
-struct Data {
+pub struct CollectorData {
     size: usize,
     counter: AtomicUsize,
+}
+
+impl CollectorData {
+    fn extract(&self) -> Data {
+        Data {
+            size: self.size,
+            counter: self.counter.load(Ordering::Relaxed),
+        }
+    }
 }
