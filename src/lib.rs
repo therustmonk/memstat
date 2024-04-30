@@ -2,6 +2,7 @@ mod collector;
 mod reporter;
 
 pub use reporter::Reporter;
+use std::cmp::Ordering;
 use std::fmt;
 use std::marker::PhantomData;
 
@@ -14,6 +15,26 @@ impl<T> Clone for MemTrack<T> {
         Self::default()
     }
 }
+
+impl<T> PartialOrd for MemTrack<T> {
+    fn partial_cmp(&self, _other: &Self) -> Option<Ordering> {
+        Some(Ordering::Equal)
+    }
+}
+
+impl<T> Ord for MemTrack<T> {
+    fn cmp(&self, _other: &Self) -> Ordering {
+        Ordering::Equal
+    }
+}
+
+impl<T> PartialEq for MemTrack<T> {
+    fn eq(&self, _other: &Self) -> bool {
+        true
+    }
+}
+
+impl<T> Eq for MemTrack<T> {}
 
 impl<T> fmt::Debug for MemTrack<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -39,7 +60,7 @@ mod test {
     use super::*;
 
     #[allow(dead_code)]
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
     struct Struct1 {
         _mem: MemTrack<Self>,
         value: u64,
