@@ -46,19 +46,6 @@ pub fn get_snapshot() -> Snapshot {
     mem_stat
 }
 
-/*
-pub fn print_report() {
-    println!("MEMSTAT REPORT ----------");
-    let reader = COLLECTOR.inner.read().unwrap();
-    for (name, data) in &reader.stats {
-        let counter = data.counter.load(Ordering::SeqCst);
-        let total = Size::from_bytes(counter * data.size);
-        println!("{name} - {total}");
-    }
-    println!("-------------------------");
-}
-*/
-
 #[derive(Default)]
 struct Collector {
     inner: RwLock<CollectorInner>,
